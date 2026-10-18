@@ -1,9 +1,16 @@
+import { randomBytes } from 'node:crypto'
 import { test, expect } from './fixtures.js'
 
 test('home search shows updating typed results and starts a discussion page immediately when nothing matches', async ({ page }) => {
-  await page.route('**/api/auth/me', async route => {
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ actor: { id: '123e4567-e89b-42d3-a456-426614174003', username: 'search-fixture', role: 'member' } }) })
-  })
+  // The home page reads the session during server rendering, which page.route cannot mock,
+  // so sign in with a real disposable account before ordering a page.
+  await page.goto('/login')
+  const suffix = randomBytes(4).toString('hex')
+  const registered = await page.evaluate(async account => {
+    const response = await fetch('/api/auth/register', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(account) })
+    return response.status
+  }, { username: `search${suffix}`, email: `search${suffix}@example.org`, password: `AIKI-search-${randomBytes(18).toString('base64url')}` })
+  expect(registered).toBe(201)
   await page.goto('/')
   const search = page.locator('#topic-search')
   const language = await page.locator('html').getAttribute('lang')
@@ -75,18 +82,17 @@ test('registered user can log in, view account ID and WPG balance, then open the
   const actorId = '123e4567-e89b-42d3-a456-426614174003'
   const query = `Login order e2e ${suffix}`
 
-  await page.route('**/api/auth/login', async route => {
-    expect(route.request().method()).toBe('POST')
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      headers: { 'set-cookie': 'aiki_session=fixture-session; Path=/; HttpOnly; SameSite=Lax' },
-      body: JSON.stringify({ actor: { id: '123e4567-e89b-42d3-a456-426614174003', username: 'login-fixture', role: 'member' } }),
-    })
-  })
-  await page.route('**/api/auth/me', async route => {
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ actor: { id: actorId, username: 'login-fixture', role: 'member' } }) })
-  })
+  // Pages read the session during server rendering, which page.route cannot mock, so the
+  // sign-in uses a real disposable account; the account details below stay a client-side fixture.
+  const username = `login${suffix}`
+  const password = `AIKI-login-${randomBytes(18).toString('base64url')}`
+  await page.goto('/login')
+  const registered = await page.evaluate(async account => {
+    const response = await fetch('/api/auth/register', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(account) })
+    await fetch('/api/auth/logout', { method: 'POST' })
+    return response.status
+  }, { username, email: `${username}@example.org`, password })
+  expect(registered).toBe(201)
   await page.route('**/api/account', async route => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ account: {
       id: actorId, username: 'login-fixture', role: 'member',
@@ -96,8 +102,8 @@ test('registered user can log in, view account ID and WPG balance, then open the
   })
 
   await page.goto('/login')
-  await page.getByLabel(/username or email/i).fill('login-fixture')
-  await page.getByLabel(/password/i).fill('Fixture-password-123!')
+  await page.getByLabel(/username or email/i).fill(username)
+  await page.getByLabel(/password/i).fill(password)
   const loginResponse = page.waitForResponse(response => response.url().endsWith('/api/auth/login') && response.status() === 200)
   // The password form's own submit button; the page also offers "Sign in with an agent key".
   await page.locator('form').getByRole('button', { name: /^sign in$/i }).click()

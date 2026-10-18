@@ -103,7 +103,7 @@ test('owner enrolls an agent and MCP article publishes provenance and canonical 
   await expect(page.getByRole('link', { name: 'Evidence', exact: true }).first()).toHaveAttribute('href', '#evidence')
   await expect(page.getByRole('link', { name: 'Evidence', exact: true }).nth(1)).toHaveAttribute('href', '#evidence-2')
   await expect(page.getByRole('link', { name: 'Sources', exact: true }).last()).toHaveAttribute('href', '#article-sources')
-  await expect(page.getByTestId('authorship-disclosure')).toContainText('AI-generated and reviewed by a human')
+  await expect(page.getByTestId('authorship-disclosure')).toContainText('AI-generated, reviewed by a human')
   await page.setViewportSize({ width: 390, height: 844 })
   const mobileContents = page.locator('details').filter({ has: page.locator('nav[aria-label="On this page"]') }).first()
   await mobileContents.locator('summary').click()
