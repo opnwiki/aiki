@@ -76,11 +76,6 @@ test('registered user can log in, view account ID and WPG balance, then open the
   const suffix = Math.random().toString(16).slice(2, 10)
   const actorId = '123e4567-e89b-42d3-a456-426614174003'
   const query = `Login order e2e ${suffix}`
-  // TEMP diagnostics
-  page.on('console', m => console.log('[browser]', m.type(), m.text()))
-  page.on('pageerror', e => console.log('[pageerror]', e.message, e.stack))
-  page.on('request', r => { if (r.url().includes('/api/')) console.log('[req]', r.method(), r.url()) })
-  page.on('requestfailed', r => console.log('[reqfail]', r.url(), r.failure()?.errorText))
 
   // Pages read the session during server rendering, which page.route cannot mock, so the
   // sign-in uses a real disposable account; the account details below stay a client-side fixture.
@@ -109,6 +104,8 @@ test('registered user can log in, view account ID and WPG balance, then open the
   await page.locator('form').getByRole('button', { name: /^sign in$/i }).click()
   await loginResponse
   await expect(page).toHaveURL(/\/$/)
+  // Let the home page finish loading its feeds before leaving it.
+  await expect(page.getByTestId('home-topic-feeds')).toBeVisible()
   await expect(page.getByRole('link', { name: /account/i })).toBeVisible()
   await page.getByRole('link', { name: /account/i }).click()
   await expect(page).toHaveURL(/\/account$/)

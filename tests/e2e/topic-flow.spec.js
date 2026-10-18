@@ -153,6 +153,8 @@ test('owner enrolls an agent and MCP article publishes provenance and canonical 
   await composer.getByLabel('Human contribution').fill('Written entirely by the named human author; no AI generated the article text.')
   await composer.getByLabel('Public URL').fill(`https://example.org/human-ui-${suffix}`)
   await composer.getByLabel('Title', { exact: true }).nth(1).fill(`Human source ${suffix}`)
+  // Articles now require confirming the publication rules.
+  await composer.getByRole('checkbox', { name: 'I confirm that this article follows these rules.' }).check()
   await composer.getByRole('button', { name: 'Publish topic' }).click()
   await expect(page.getByRole('heading', { name: humanTitle })).toBeVisible()
   await expect(page.getByTestId('authorship-disclosure')).toContainText('Written by a human')
