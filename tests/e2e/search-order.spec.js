@@ -1,16 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import { test, expect } from './fixtures.js'
 
-test('home search shows updating typed results and starts a discussion page immediately when nothing matches', async ({ page }) => {
-  // The home page reads the session during server rendering, which page.route cannot mock,
-  // so sign in with a real disposable account before ordering a page.
-  await page.goto('/login')
-  const suffix = randomBytes(4).toString('hex')
-  const registered = await page.evaluate(async account => {
-    const response = await fetch('/api/auth/register', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(account) })
-    return response.status
-  }, { username: `search${suffix}`, email: `search${suffix}@example.org`, password: `AIKI-search-${randomBytes(18).toString('base64url')}` })
-  expect(registered).toBe(201)
+test('home search shows updating typed results and sends an anonymous page order to sign-in', async ({ page }) => {
   await page.goto('/')
   const search = page.locator('#topic-search')
   const language = await page.locator('html').getAttribute('lang')
@@ -53,15 +44,19 @@ test('home search shows updating typed results and starts a discussion page imme
   await expect(create).toContainText(orderPattern)
   await expect(create).toHaveAttribute('aria-disabled', 'false')
 
+  // Creating a page needs an account: an anonymous reader is sent to sign-in with the query kept.
+  // The signed-in order is covered by the login test below.
   await search.fill('New article order e2e')
+  let ordered = false
   await page.route('**/api/article-drafts', async route => {
-    expect(route.request().method()).toBe('POST')
-    expect(route.request().postDataJSON()).toEqual({ query: 'New article order e2e', locale: language, requestedKind: 'discussion' })
-    await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ topic: { page_number: 78, short_path: '/78', slug: 'new-article-order-e2e', kind: 'page', status: 'published', access: 'public', classification: { status: 'queued', progressPercent: 0 } } }) })
+    ordered = true
+    await route.abort()
   })
   await expect(create).toHaveAttribute('aria-disabled', 'false')
   await create.click()
-  await expect(page).toHaveURL(/\/78$/)
+  await expect(page).toHaveURL(/\/login\?redirect=/)
+  expect(new URL(page.url()).searchParams.get('redirect')).toBe(`/?q=${encodeURIComponent('New article order e2e')}`)
+  expect(ordered).toBe(false)
 })
 
 test('login API failure stays on login page and shows a safe error', async ({ page }) => {
@@ -81,6 +76,11 @@ test('registered user can log in, view account ID and WPG balance, then open the
   const suffix = Math.random().toString(16).slice(2, 10)
   const actorId = '123e4567-e89b-42d3-a456-426614174003'
   const query = `Login order e2e ${suffix}`
+  // TEMP diagnostics
+  page.on('console', m => console.log('[browser]', m.type(), m.text()))
+  page.on('pageerror', e => console.log('[pageerror]', e.message, e.stack))
+  page.on('request', r => { if (r.url().includes('/api/')) console.log('[req]', r.method(), r.url()) })
+  page.on('requestfailed', r => console.log('[reqfail]', r.url(), r.failure()?.errorText))
 
   // Pages read the session during server rendering, which page.route cannot mock, so the
   // sign-in uses a real disposable account; the account details below stay a client-side fixture.
@@ -126,6 +126,8 @@ test('registered user can log in, view account ID and WPG balance, then open the
     const body = route.request().postDataJSON()
     expect(body.query).toBe(query)
     expect(body.locale).toBe('en')
+    // A search with no match starts a discussion (a question when the query has "?").
+    expect(body.requestedKind).toBe('discussion')
     await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ topic: { page_number: 79, short_path: '/79', slug: query.toLowerCase().replaceAll(' ', '-'), kind: 'page', status: 'published', access: 'public', classification: { status: 'queued', progressPercent: 0 } } }) })
   })
 

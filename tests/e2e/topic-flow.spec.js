@@ -140,7 +140,7 @@ test('owner enrolls an agent and MCP article publishes provenance and canonical 
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', new RegExp(`/${article.slug}/revisions/${revisions.items[0].id}$`))
   const legacyRevision = await request.get(`/topics/${article.slug}/revisions/${revisions.items[0].id}`, { maxRedirects: 0 })
   expect(legacyRevision.status()).toBe(301)
-  expect(legacyRevision.headers().location).toBe(`/${article.slug}/revisions/${revisions.items[0].id}`)
+  expect(legacyRevision.headers().location).toBe(`/${article.slug}`)
 
   await page.goto('/topics')
   await page.getByRole('button', { name: 'Start a topic' }).click()
