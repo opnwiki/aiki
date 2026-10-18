@@ -84,7 +84,8 @@ test('published markdown gallery renders every construct', async ({ page }) => {
   })
   expect(created.status, JSON.stringify(created.body)).toBe(201)
   expect(created.body.topic.access).toBe('public')
-  expect(created.body.topic.slug).toMatch(/^[a-z0-9-]+$/)
+  // Without a requested address a page gets a short unambiguous code (server/utils/page-address.js).
+  expect(created.body.topic.slug).toMatch(/^[A-HJ-NP-Za-km-z2-9]{5}$/)
 
   await page.goto(`/${created.body.topic.slug}`)
   await hideDevOverlay(page)
@@ -151,11 +152,11 @@ test('published markdown gallery renders every construct', async ({ page }) => {
   await expect(article).toContainText('The next line follows.')
   await expect(article).toContainText('[[wikilink]]')
   await expect(article.locator('a[href*="wikilink"]')).toHaveCount(0)
-    await expect(article.locator('img')).toHaveCount(1)
-  await expect(article).toContainText('pixel')
-    const pixelImg = article.locator('img[src*="track.png"]')
-    await expect(pixelImg).toHaveCount(1)
-    await expect(pixelImg).toHaveAttribute('alt', /pixel/)
+  // External https images are kept as <img>, so "pixel" is the alt text, not visible text.
+  await expect(article.locator('img')).toHaveCount(1)
+  const pixelImg = article.locator('img[src*="track.png"]')
+  await expect(pixelImg).toHaveCount(1)
+  await expect(pixelImg).toHaveAttribute('alt', /pixel/)
   await expect(article.locator('script, iframe')).toHaveCount(0)
   await expect(article).toContainText('[unsafe](javascript:alert(1))')
   await expect(article.locator('a[href^="javascript:"]')).toHaveCount(0)

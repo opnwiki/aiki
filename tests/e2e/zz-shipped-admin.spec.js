@@ -117,8 +117,9 @@ test('notification filters separate comments from edits and page offers', async 
 
   await page.goto(`/${slug}`)
   await expect(page.getByTestId('page-number')).toBeVisible()
-  await expect(page.getByTestId('page-short-url')).toHaveAttribute('href', /\/n\/\d+$/)
+  await expect(page.getByTestId('page-short-url')).toHaveText(slug)
   const canonical = page.getByTestId('page-canonical-url')
+  await expect(canonical).toHaveAttribute('title', new RegExp(`/${created.body.topic.page_number}$`))
   const full = await canonical.getAttribute('title')
   await canonical.click()
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(full)
