@@ -84,7 +84,8 @@ test('published markdown gallery renders every construct', async ({ page }) => {
   })
   expect(created.status, JSON.stringify(created.body)).toBe(201)
   expect(created.body.topic.access).toBe('public')
-  expect(created.body.topic.slug).toMatch(/^[a-z0-9-]+$/)
+  // Without a requested address a page gets a short unambiguous code (server/utils/page-address.js).
+  expect(created.body.topic.slug).toMatch(/^[A-HJ-NP-Za-km-z2-9]{5}$/)
 
   await page.goto(`/${created.body.topic.slug}`)
   await hideDevOverlay(page)

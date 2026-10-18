@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures.js'
 
-test('home search shows updating typed results and creates a public untyped page immediately', async ({ page }) => {
+test('home search shows updating typed results and starts a discussion page immediately when nothing matches', async ({ page }) => {
   await page.route('**/api/auth/me', async route => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ actor: { id: '123e4567-e89b-42d3-a456-426614174003', username: 'search-fixture', role: 'member' } }) })
   })
@@ -11,7 +11,8 @@ test('home search shows updating typed results and creates a public untyped page
   const questionLabel = language === 'ru' ? 'Вопросы' : 'Questions'
   const discussionLabel = language === 'ru' ? 'Обсуждения' : 'Discussions'
   const noMatchPattern = language === 'ru' ? /Подходящих страниц и задач на написание пока нет/ : /No pages or writing tasks match this search yet/
-  const orderPattern = language === 'ru' ? /Создать статью/ : /Create article/
+  // With no match the search offers to start a discussion (or a question when the query has "?").
+  const orderPattern = language === 'ru' ? /Обсудить в AIKI/ : /Discuss in AIKI/
   const dropdown = page.getByTestId('search-dropdown')
   const fixtures = [
     { needle: 'Welcome to AIKI', slug: 'welcome-to-aiki', kind: 'article', title: 'Welcome to AIKI' },
@@ -40,15 +41,19 @@ test('home search shows updating typed results and creates a public untyped page
 
   await search.fill('A unique phrase with no existing result')
   await expect(dropdown.getByText(noMatchPattern)).toBeVisible()
-  await expect(dropdown.getByRole('button', { name: orderPattern })).toBeEnabled()
+  const create = dropdown.getByTestId('search-create-article')
+  await expect(create).toHaveAttribute('role', 'button')
+  await expect(create).toContainText(orderPattern)
+  await expect(create).toHaveAttribute('aria-disabled', 'false')
 
   await search.fill('New article order e2e')
   await page.route('**/api/article-drafts', async route => {
     expect(route.request().method()).toBe('POST')
-    expect(route.request().postDataJSON()).toEqual({ query: 'New article order e2e', locale: language })
+    expect(route.request().postDataJSON()).toEqual({ query: 'New article order e2e', locale: language, requestedKind: 'discussion' })
     await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ topic: { page_number: 78, short_path: '/78', slug: 'new-article-order-e2e', kind: 'page', status: 'published', access: 'public', classification: { status: 'queued', progressPercent: 0 } } }) })
   })
-  await page.getByRole('button', { name: orderPattern }).click()
+  await expect(create).toHaveAttribute('aria-disabled', 'false')
+  await create.click()
   await expect(page).toHaveURL(/\/78$/)
 })
 
@@ -59,7 +64,8 @@ test('login API failure stays on login page and shows a safe error', async ({ pa
   await page.goto('/login')
   await page.getByLabel(/username or email/i).fill('login-fixture')
   await page.getByLabel(/password/i).fill('Fixture-password-123!')
-  await page.getByRole('button', { name: /sign in/i }).last().click()
+  // The password form's own submit button; the page also offers "Sign in with an agent key".
+  await page.locator('form').getByRole('button', { name: /^sign in$/i }).click()
   await expect(page).toHaveURL(/\/login$/)
   await expect(page.getByRole('alert')).toContainText('The request could not be completed. Please try again.')
 })
@@ -93,7 +99,8 @@ test('registered user can log in, view account ID and WPG balance, then open the
   await page.getByLabel(/username or email/i).fill('login-fixture')
   await page.getByLabel(/password/i).fill('Fixture-password-123!')
   const loginResponse = page.waitForResponse(response => response.url().endsWith('/api/auth/login') && response.status() === 200)
-  await page.getByRole('button', { name: /sign in/i }).last().click()
+  // The password form's own submit button; the page also offers "Sign in with an agent key".
+  await page.locator('form').getByRole('button', { name: /^sign in$/i }).click()
   await loginResponse
   await expect(page).toHaveURL(/\/$/)
   await expect(page.getByRole('link', { name: /account/i })).toBeVisible()
