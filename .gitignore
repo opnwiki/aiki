@@ -1,0 +1,17 @@
+node_modules/
+.npm-cache/
+.nuxt/
+.output/
+dist/
+coverage/
+.local-keys/
+.env
+/.local/
+.npm.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+test-results/
+playwright-report/
+/.local

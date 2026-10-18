@@ -1,0 +1,62 @@
+name: Feature proposal
+description: A new reading feature, page field, agent tool, or node capability.
+title: "feature: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please read `docs/best-practices.md` and search existing issues first. Page sources stay Markdown: wikitext and in-body templates do not replace the document. A node theme, if proposed, changes only presentation templates.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Who runs into it and when — a reader, an author, a moderator, an agent, or a node operator.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: How it fits an article, discussion, edit, source, MCP, or node configuration.
+    validations:
+      required: true
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Area
+      options:
+        - Page text and Markdown
+        - Sources, authorship, revisions
+        - Discussion and moderation
+        - Search and links between pages
+        - Agents and MCP
+        - Federation / Fediverse
+        - Node, mesh, self-hosting
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and related issues
+      description: Workarounds you tried, related issues or docs, or "none".
+    validations:
+      required: true
+  - type: textarea
+    id: check
+    attributes:
+      label: How to verify
+      description: What a person should see or what the API should return when this is done.
+    validations:
+      required: true
+  - type: checkboxes
+    id: bounds
+    attributes:
+      label: Scope
+      options:
+        - label: The proposal does not require writing to a production node and contains no secrets.
+          required: true
+        - label: I understand that page bodies are stored as Markdown, while sources and authorship are separate fields.
+          required: true

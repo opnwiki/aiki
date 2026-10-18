@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="AIKI">
+  <rect width="64" height="64" rx="16" fill="#12352a"/>
+  <path d="M17.5 51.5 32 15.5 46.5 51.5" stroke="#f6fbf8" stroke-width="7.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M25.4 37.2h13.2" stroke="#3ee0a0" stroke-width="5.1" stroke-linecap="round"/>
+  <circle cx="32" cy="15.6" r="4.35" fill="#3ee0a0"/>
+</svg>

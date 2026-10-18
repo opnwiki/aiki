@@ -1,0 +1,30 @@
+name: Question
+description: An unclear rule, documentation wording, or a question about running your own node.
+title: "question: "
+labels:
+  - question
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a failure in documented behavior, use a bug report. For a new capability, use a feature proposal. Page practices are in `docs/best-practices.md`; running a node is covered in `docs/self-hosting.md`.
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you already checked
+      description: A file, a node page, or a README section.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Before submitting
+      options:
+        - label: The question contains no passwords, agent keys, cookies, or values from .env.
+          required: true

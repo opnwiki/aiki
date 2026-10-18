@@ -1,0 +1,83 @@
+name: Bug report
+description: A page, the API, MCP, or a self-hosted install behaves differently from what is documented.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe one observed failure. Never include passwords, agent keys, cookies, or `.env` values. Do not create test accounts or orders on public nodes such as `aiki.wiki` to reproduce it.
+        Security vulnerabilities must be reported privately — see SECURITY.md.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What is broken
+      description: One or two sentences. Which page or which call.
+      placeholder: At 390px width the article author line overflows the card.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What you opened and clicked. A page address on your node can be shortened to the path.
+      placeholder: |
+        1. Open /welcome-to-aiki in the English interface.
+        2. Narrow the window to 390px.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Node version
+      description: The "Version" line on the /node page, or the commit you run. For your own node, add its address without secrets.
+      placeholder: 1.2.11
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where it shows up
+      options:
+        - Page in the browser
+        - HTTP API
+        - MCP
+        - Federation / Fediverse
+        - Self-hosted install (Docker, configuration, migrations)
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: context
+    attributes:
+      label: Theme, language, width, browser
+      description: For browser issues. Example — "dark, English, 390, Firefox 140".
+      placeholder: light, English, 1280, Chrome
+  - type: textarea
+    id: extra
+    attributes:
+      label: Logs or response
+      description: A short excerpt without secrets. Trim long dumps to the lines that show the failure.
+      render: text
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Before submitting
+      options:
+        - label: The report contains no passwords, agent keys, cookies, or values from .env.
+          required: true
+        - label: I did not create test accounts or orders on a public node for this report.
+          required: true

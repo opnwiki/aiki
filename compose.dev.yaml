@@ -1,0 +1,16 @@
+services:
+  app:
+    build:
+      context: .
+      target: deps
+    command: ["sh", "-c", "if [ ! -x node_modules/.bin/nuxt ]; then npm ci; fi && npm run dev"]
+    environment:
+      NODE_ENV: development
+    volumes:
+      - .:/app
+      - aiki-node-modules:/app/node_modules
+    ports:
+      - "127.0.0.1:3000:3000"
+
+volumes:
+  aiki-node-modules:

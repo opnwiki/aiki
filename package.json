@@ -1,0 +1,76 @@
+{
+  "name": "aiki-node",
+  "version": "1.2.11",
+  "private": true,
+  "description": "Self-hosted open knowledge commons for people and AI agents.",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opnwiki/aiki.git"
+  },
+  "homepage": "https://github.com/opnwiki/aiki",
+  "bugs": {
+    "url": "https://github.com/opnwiki/aiki/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev --host 0.0.0.0",
+    "build": "node scripts/clean-build-output.mjs && node --import ./scripts/polyfill-set-methods.mjs ./node_modules/nuxt/bin/nuxt.mjs build",
+    "preview": "nuxt preview --host 0.0.0.0",
+    "start": "node .output/server/index.mjs",
+    "check:js": "node scripts/check-js.mjs",
+    "test": "node scripts/run-tests.mjs",
+    "test:integration": "node tests/integration/smoke.mjs",
+    "test:integration:review": "node tests/integration/review-workflow.mjs",
+    "test:integration:revision-integrity": "node tests/integration/revision-integrity.mjs",
+    "test:integration:citation-integrity": "node tests/integration/citation-integrity.mjs",
+    "test:integration:agent-mcp": "node tests/integration/agent-mcp.mjs",
+    "test:integration:delegated-accounts": "node tests/integration/delegated-accounts.mjs",
+    "test:integration:translation-cycle": "node tests/integration/article-translation-cycle.mjs",
+    "test:integration:revision-diffs": "node tests/integration/revision-diffs.mjs",
+    "test:integration:registration": "node tests/integration/registration-toggle.mjs",
+    "test:integration:mesh": "node tests/integration/node-mesh.mjs",
+    "test:integration:release": "node tests/integration/node-release.mjs",
+    "test:integration:access": "node tests/integration/page-access.mjs",
+    "test:integration:archive": "node tests/integration/archive-provenance.mjs",
+    "test:integration:rules": "node tests/integration/article-rules.mjs",
+    "test:integration:moderation": "node tests/integration/content-moderation.mjs",
+    "test:integration:reply-client": "node tests/integration/reply-client.mjs",
+    "test:live-agent-mcp": "node tests/integration/live-agent-mcp.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:markdown": "playwright test tests/e2e/markdown-render.spec.js",
+    "test:compose": "node scripts/compose-acceptance.mjs",
+    "setup:local": "node scripts/setup-local.mjs",
+    "admin:create": "node scripts/admin-create.js",
+    "ops": "node scripts/aiki-ops.mjs",
+    "db:migrate": "node scripts/migrate.js",
+    "test:integration:writing-tasks": "node tests/integration/writing-tasks.mjs",
+    "test:integration:login": "node tests/integration/login.mjs",
+    "test:integration:account-wallet": "node tests/integration/account-wallet.mjs",
+    "test:integration:agent-run-executor": "node tests/integration/agent-run-executor.mjs",
+    "test:backup-restore": "node scripts/backup-restore-rehearsal.mjs"
+  },
+  "dependencies": {
+    "@fedify/fedify": "2.4.3",
+    "@fedify/nuxt": "2.4.3",
+    "@fedify/postgres": "2.4.3",
+    "@iconify-json/lucide": "^1.2.138",
+    "@iconify-json/simple-icons": "^1.2.99",
+    "@nuxt/ui": "^4.8.1",
+    "markdown-it": "^14.1.0",
+    "nuxt": "^4.5.2",
+    "pg": "^8.16.3",
+    "postgres": "3.4.9",
+    "sanitize-html": "^2.17.0",
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4.1.11"
+  },
+  "overrides": {},
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "yaml": "^2.9.1"
+  }
+}

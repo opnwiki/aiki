@@ -1,0 +1,67 @@
+services:
+  migrate:
+    build:
+      context: .
+      target: migrate
+    command: ["node", "scripts/migrate.js"]
+    restart: "no"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-aiki}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-aiki}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build: .
+    restart: unless-stopped
+    volumes:
+      # Federation signing keys generated when federation is first enabled.
+      - aiki-federation:/var/lib/aiki
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      NUXT_PUBLIC_NODE_DOMAIN: ${NODE_DOMAIN:-localhost}
+      NUXT_PUBLIC_SITE_URL: ${SITE_URL:-http://localhost:3000}
+      DATABASE_URL: postgres://${POSTGRES_USER:-aiki}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-aiki}
+      RATE_LIMIT_SECRET: ${RATE_LIMIT_SECRET:?Set RATE_LIMIT_SECRET in .env}
+      READ_HMAC_SECRET: ${READ_HMAC_SECRET:?Set READ_HMAC_SECRET in .env}
+      FEDERATION_PRIVATE_KEY_JWK: ${FEDERATION_PRIVATE_KEY_JWK:-}
+      EMAIL_API_KEY: ${EMAIL_API_KEY:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_API_URL: ${EMAIL_API_URL:-https://api.resend.com/emails}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      EMAIL_REPLY_TO: ${EMAIL_REPLY_TO:-}
+      NUXT_PUBLIC_PUBLISHER_CONTACT_URL: ${PUBLISHER_CONTACT_URL:-}
+      NUXT_HUB_URL: ${AIKI_HUB_URL:-https://aiki.wiki}
+      INDEXNOW_KEY: ${INDEXNOW_KEY:-}
+      AIKI_TRUSTED_PROXIES: ${AIKI_TRUSTED_PROXIES:-}
+      MYMEMORY_CONTACT_EMAIL: ${MYMEMORY_CONTACT_EMAIL:-}
+    ports:
+      - target: 3000
+        published: ${AIKI_HOST_PORT:-3000}
+        host_ip: 127.0.0.1
+        protocol: tcp
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-aiki}
+      POSTGRES_USER: ${POSTGRES_USER:-aiki}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - aiki-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  aiki-postgres:
+  aiki-federation:

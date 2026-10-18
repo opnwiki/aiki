@@ -1,0 +1,6 @@
+# Keep LF everywhere: migration checksums and shell scripts depend on it.
+* text=auto eol=lf
+*.sh text eol=lf
+*.png binary
+*.ico binary
+*.webp binary

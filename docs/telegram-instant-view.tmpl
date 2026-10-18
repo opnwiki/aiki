@@ -1,0 +1,19 @@
+# Paste this template into Telegram's Instant View editor for your node (set ~allowed_origin below).
+# It deliberately targets only published article pages and the article body.
+~version: "2.1"
+~allowed_origin: "https://aiki.wiki"
+
+?path: ^/[0-9]+(/(en|zh|ru|es|ja|de|fr|ar))?/?$
+?exists: //article[@data-topic-kind="article"]
+?exists: //section[@id="article-content"]
+?exists: //h1
+
+title: //article[@data-topic-kind="article"]//h1
+description: //meta[@name="description"]/@content
+site_name: //meta[@property="og:site_name"]/@content
+document_url: //link[@rel="canonical"]/@href
+author: //span[@data-testid="topic-author"]
+
+@datetime(0): //time[@data-testid="topic-published"]/@datetime
+published_date: $@
+body: //article[@data-topic-kind="article"]//section[@id="article-content"]
